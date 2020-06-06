@@ -1,0 +1,84 @@
+/* Short script that prompts user for a credit card number and determines whether the number is valid and what type of card it is */
+
+/* Importing the libraries I will use, cs50.h is a library designed by the course admins */
+#include <cs50.h>
+#include <stdio.h>
+#include <math.h>
+
+/* Initialize the functions in the script */
+void validate(long ccnum);
+void typeOfCard(long num, int length);
+
+int main(void){
+    
+    long ccnum = get_long("Please enter credit card number\n"); /* get_long is a cs50 function that prompts the user for a 'long' in this case a cc number */
+    if (ccnum > 0){
+        validate(ccnum);
+    }
+    else{
+        printf("INVALID\n");
+    }
+}
+
+void validate(long ccnum){
+    /* checkdigit process: firstly for every other digit, double the digit and add to the total the sum of the products digits,
+    e.g. is the original digit is 6, double it to 12 and then add to the total 1+2 i.e.3. Start this process from the second last 
+    digit of the credit card number.
+    Then add the remaining digits to the total. If the total is divisible by 10 then the number is valid. */
+    
+    int len = floor(log10(ccnum))+1;
+    long originalnum = ccnum;
+    int total = 0;
+    for(int i = 1; i <= len; i++){
+        if (i % 2 == 0){
+            int digit = (ccnum % 10)*2;
+            if (digit != 0){
+                int productlen = floor(log10(digit))+1;
+                for (int j = 0; j < productlen; j++){
+                    total += digit % 10;
+                    digit /= 10;
+                }
+            }  
+        }
+        else{
+            int digit = ccnum % 10;
+            total += digit;
+        }
+        ccnum /= 10;
+    }
+
+    if (total % 10 != 0){
+        printf("INVALID\n");
+    }
+    else{
+        typeOfCard(originalnum, len);
+    }
+
+}
+
+
+void typeOfCard(long num, int length){
+    /* Function called after a credit card is determined valid to calculate what type of card is being used. Rules:
+    if number is 13 or 16 digits long and starts with 4 then it is a visa card,
+    if number is 15 digits long and starts with 34 or 37 it is an american express card,
+    if number is 16 digits long and start with 51, 52, 53, 54, 55 it is a mastercard */
+    
+    long visa1 = num/pow(10, 12);
+    long visa2 = num/pow(10, 15);
+    long amex = num/pow(10, 13);
+    long master = num/pow(10, 14);
+
+    if ((length == 13 && visa1 == 4) || (length == 16 && visa2 == 4)){
+        printf("VISA\n");
+    }
+    else if (length == 15 && (amex == 34 || amex == 37)){
+        printf("AMEX\n");
+    }
+    else if (length == 16 && (51 <= master && master <= 55)){
+        printf("MASTERCARD\n");
+    }
+    else{
+        printf("INVALID\n");
+    }
+
+}
